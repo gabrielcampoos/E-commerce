@@ -1,39 +1,45 @@
+import { Produto } from "../../classes";
 import { ProdutosRepository } from "../../repository/Produtos";
 
-export type ListagemProdutos = {
-  id: string;
-  categorias: any[];
-  preco: number;
-  quantidadeEstoque?: number;
-  nome: string;
-  descricao: string;
-  numeroSerie: string;
-  ativo: boolean;
+export type Ordem = "cresc" | "decresc";
+
+export type FiltrosDTO = {
+  valor_max?: number;
+  valor_min?: number;
+  ordem_nome?: Ordem;
+  ordem_preco?: Ordem;
+  nome_produto?: string;
 };
 
-type RetornoListagem = {
+export type RetornoListarProduto = {
   sucesso: boolean;
   mensagem: string;
-  produtos: ListagemProdutos[];
+  produtos?: Produto[];
 };
 
 export class ListarProdutos {
-  public execute(): RetornoListagem {
-    const repository = new ProdutosRepository();
-    const listaProdutosRetorno = repository.listarProdutos();
+  private filtro: FiltrosDTO;
 
-    if (!listaProdutosRetorno.length) {
+  constructor(filtrosQuery: FiltrosDTO) {
+    this.filtro = filtrosQuery;
+  }
+
+  execute(): RetornoListarProduto {
+    const repository = new ProdutosRepository();
+
+    const retorno = repository.listagemProdutos(this.filtro);
+
+    if (!retorno.length) {
       return {
+        mensagem: "Nenhum produto encontrado com o parametro citado",
         sucesso: false,
-        mensagem: "Não possui nenhum produto cadastrado.",
         produtos: [],
       };
     }
-
     return {
+      mensagem: "Produtos listados com sucesso",
       sucesso: true,
-      mensagem: "Produtos listados com sucesso.",
-      produtos: listaProdutosRetorno,
+      produtos: retorno,
     };
   }
 }
